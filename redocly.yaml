@@ -2,20 +2,3 @@ apis:
   legion-integration@v1:
     root: openapi.yaml
     title: Legion Integration API
-
-nav:
-  - label: شروع سریع
-    page: index.md
-  - label: API Reference
-    page: openapi.yaml
-
-openapi:
-  disableSearch: false
-  expandDefaultServerVariables: true
-  hideDownloadButton: false
-  hideSingleRequestSampleTab: false
-  jsonSampleExpandLevel: 3
-  layout: "stacked"
-  showExtensions: false
-  sortOperationsAlphabetically: false
-  sortTagsAlphabetically: false
