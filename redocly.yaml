@@ -9,15 +9,13 @@ sidebar:
   - label: API Reference
     page: openapi.yaml
 
-theme:
-  openapi:
-    disableSearch: false
-    expandDefaultServerVariables: true
-    hideDownloadButton: false
-    hideSingleRequestSampleTab: false
-    jsonSampleExpandLevel: 3
-    lazy: false
-    layout: "stacked"
-    showExtensions: false
-    sortOperationsAlphabetically: false
-    sortTagsAlphabetically: false
+openapi:
+  disableSearch: false
+  expandDefaultServerVariables: true
+  hideDownloadButton: false
+  hideSingleRequestSampleTab: false
+  jsonSampleExpandLevel: 3
+  layout: "stacked"
+  showExtensions: false
+  sortOperationsAlphabetically: false
+  sortTagsAlphabetically: false
