@@ -1,0 +1,1800 @@
+openapi: 3.1.0
+info:
+  title: Legion Integration API
+  description: |
+    ## مستندات API یکپارچه‌سازی لژیون
+
+    این API برای ادغام سیستم‌های خارجی (مانند فروشگاه‌های آنلاین، نرم‌افزارهای حضوری، و POS) با پلتفرم لژیون طراحی شده است.
+
+    ### احراز هویت
+    تمام درخواست‌ها نیاز به هدر `X-Api-Key` دارند:
+    ```
+    X-Api-Key: <your_integration_token>
+    ```
+
+    ### عملیات ناهمزمان (Async)
+    برخی endpointها (مانند insert و bulk-update) به صورت ناهمزمان پردازش می‌شوند و یک `process_id` برمی‌گردانند. برای بررسی وضعیت از `/v1/api/integration/sync/inquiry/` استفاده کنید.
+
+    ### Base URL
+    ```
+    https://api.legion.tools
+    ```
+
+    ### لینک‌های مفید
+    - پنل مدیریت: [https://app.legion.tools](https://app.legion.tools)
+    - وب‌سایت: [https://legion.tools](https://legion.tools)
+  version: "1.0.0"
+  contact:
+    name: پشتیبانی لژیون
+    url: https://legion.tools
+  x-logo:
+    url: https://legion.tools/logo.png
+
+servers:
+  - url: https://api.legion.tools
+    description: Production Server
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: توکن یکپارچه‌سازی که از پنل لژیون دریافت می‌شود
+
+  schemas:
+    ProcessIdResponse:
+      type: object
+      description: پاسخ عملیات ناهمزمان
+      properties:
+        process_id:
+          type: string
+          format: uuid
+          description: شناسه فرآیند برای پیگیری وضعیت
+          example: "caeda944-9793-4940-b5cd-be90aa3e97ef"
+
+    PaginationMeta:
+      type: object
+      properties:
+        per_page:
+          type: integer
+          description: تعداد آیتم در هر صفحه
+          example: 10
+        current_page:
+          type: integer
+          description: شماره صفحه فعلی
+          example: 1
+        total_page:
+          type: integer
+          description: تعداد کل صفحات
+          example: 5
+        total_item:
+          type: integer
+          description: تعداد کل آیتم‌ها
+          example: 47
+
+    ErrorDetail:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: پیام خطا
+          example: "username or uid must be provided"
+
+    Product:
+      type: object
+      description: محصول
+      required:
+        - pid
+        - title
+        - price
+      properties:
+        pid:
+          type: integer
+          description: شناسه یکتای محصول در سیستم شما
+          example: 600073
+        title:
+          type: string
+          description: نام محصول
+          example: "چای سیاه"
+        price:
+          oneOf:
+            - type: number
+            - type: string
+          description: قیمت محصول
+          example: 50000
+        url:
+          type: string
+          format: uri
+          description: لینک صفحه محصول
+          example: "https://yourshop.com/product/black-tea/"
+        image:
+          type: string
+          format: uri
+          description: لینک تصویر محصول
+          example: "https://yourshop.com/images/black-tea.jpg"
+        categories:
+          type: array
+          items:
+            type: integer
+          description: آرایه‌ای از شناسه دسته‌بندی‌ها
+          example: [16, 22]
+        is_active:
+          type: boolean
+          description: وضعیت فعال بودن محصول
+          example: true
+        created:
+          type: string
+          format: date-time
+          description: تاریخ ایجاد
+          readOnly: true
+        updated:
+          type: string
+          format: date-time
+          description: تاریخ آخرین به‌روزرسانی
+          readOnly: true
+
+    Category:
+      type: object
+      description: دسته‌بندی
+      required:
+        - cid
+        - name
+      properties:
+        cid:
+          type: integer
+          description: شناسه یکتای دسته‌بندی در سیستم شما
+          example: 15
+        name:
+          type: string
+          description: نام دسته‌بندی
+          example: "سایر محصولات"
+        parent:
+          type: integer
+          description: شناسه دسته‌بندی والد (0 برای دسته‌بندی‌های ریشه)
+          example: 0
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        updated:
+          type: string
+          format: date-time
+          readOnly: true
+
+    ScoreItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 9
+        name:
+          type: string
+          example: "سکه"
+        icon:
+          type: string
+          format: uri
+        number:
+          type: integer
+          description: تعداد امتیاز/سکه
+          example: 150
+
+    Account:
+      type: object
+      description: حساب کاربری مشتری
+      properties:
+        id:
+          type: integer
+          description: شناسه داخلی لژیون
+          readOnly: true
+          example: 141865
+        username:
+          type: string
+          description: نام کاربری (معمولاً شماره موبایل)
+          example: "9121234567"
+        uid:
+          type: integer
+          description: شناسه یکتا در سیستم شما
+          example: 219
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        mobile:
+          type: string
+          example: "9121234567"
+        first_name:
+          type: string
+          example: "علی"
+        last_name:
+          type: string
+          example: "رضایی"
+        score:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScoreItem'
+          description: امتیازات و سکه‌های کاربر
+        tier:
+          type: string
+          nullable: true
+          description: سطح وفاداری کاربر
+          example: "Gold"
+        user_segment:
+          type: array
+          items:
+            type: string
+          description: بخش‌بندی‌های کاربر
+        xp:
+          type: integer
+          description: امتیاز تجربه
+          example: 250
+        rfm_segment:
+          type: integer
+          description: بخش‌بندی RFM (0-5)
+          example: 3
+
+    AccountInsert:
+      type: object
+      description: داده برای ثبت مشتری جدید
+      required:
+        - username
+      properties:
+        userId:
+          type: integer
+          description: شناسه کاربر در سیستم شما
+          example: 1500000090
+        username:
+          type: string
+          description: نام کاربری - ترجیحاً شماره موبایل، ایمیل، یا userId
+          example: "9121234567"
+        first_name:
+          type: string
+          example: "علی"
+        last_name:
+          type: string
+          example: "رضایی"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        mobile:
+          type: string
+          example: "9121234567"
+        address:
+          type: string
+          example: "تهران، خیابان ولیعصر"
+        post_code:
+          type: string
+          example: "1234567890"
+
+    AccountBulkUpdate:
+      type: object
+      description: داده برای به‌روزرسانی گروهی مشتریان
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          description: شناسه داخلی لژیون (اجباری)
+          example: 141891
+        uid:
+          type: integer
+          description: شناسه در سیستم شما
+          example: 280
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        mobile:
+          type: string
+        birthday:
+          type: string
+          description: تاریخ تولد
+        gender:
+          type: string
+        country:
+          type: string
+        state:
+          type: string
+        city:
+          type: string
+        referral_code:
+          type: string
+        post_code:
+          type: string
+        address:
+          type: string
+        score:
+          type: string
+        xp:
+          type: integer
+        is_imperfect:
+          type: boolean
+
+    RewardMeta:
+      type: object
+      properties:
+        discount_type:
+          type: integer
+          description: نوع تخفیف (1=ثابت, 2=درصدی)
+          example: 2
+        free_shipping:
+          type: integer
+          example: 0
+        max_use_count:
+          type: integer
+          nullable: true
+        max_user_count:
+          type: integer
+          nullable: true
+        discount_on_type:
+          type: integer
+          example: 1
+        max_product_count:
+          type: integer
+          nullable: true
+        basket_maximum_limit:
+          type: number
+          nullable: true
+
+    Reward:
+      type: object
+      properties:
+        product_ids:
+          type: array
+          items:
+            type: integer
+          description: محصولات مشمول
+        category_ids:
+          type: array
+          items:
+            type: integer
+          description: دسته‌بندی‌های مشمول
+        meta:
+          $ref: '#/components/schemas/RewardMeta'
+
+    ClaimedReward:
+      type: object
+      properties:
+        user_email:
+          type: string
+          format: email
+        user_mobile:
+          type: string
+        user_uid:
+          type: integer
+        code:
+          type: string
+          description: کد تخفیف
+          example: "cartBBJM"
+        discount_value:
+          type: number
+          description: مقدار تخفیف
+          example: 5
+        reward:
+          $ref: '#/components/schemas/Reward'
+        expire_at:
+          type: string
+          format: date-time
+          nullable: true
+        claimed_at:
+          type: string
+          format: date-time
+        is_burned:
+          type: boolean
+          description: آیا کد استفاده شده؟
+        burned_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    SocialMedia:
+      type: object
+      description: پروفایل شبکه‌های اجتماعی
+      properties:
+        linkedin:
+          type: string
+          nullable: true
+        facebook:
+          type: string
+          nullable: true
+        instagram:
+          type: string
+          nullable: true
+        twitter:
+          type: string
+          nullable: true
+        whatsapp:
+          type: string
+          nullable: true
+        telegram:
+          type: string
+          nullable: true
+        youtube:
+          type: string
+          nullable: true
+
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        note:
+          type: string
+        created:
+          type: string
+          format: date-time
+
+    SyncInquiryResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            updated_ids:
+              type: array
+              items:
+                type: integer
+              description: شناسه‌های به‌روزرسانی شده
+            created_ids:
+              type: array
+              items:
+                type: integer
+              description: شناسه‌های ایجاد شده
+        status:
+          type: string
+          enum: [success, pending, failed]
+          example: "success"
+
+    CashbackCreditItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        payload:
+          type: object
+          properties:
+            credits_earned:
+              type: number
+              description: مقدار کشبک کسب شده
+            order_id:
+              type: integer
+        uid:
+          type: integer
+        username:
+          type: string
+        event_id:
+          type: integer
+        occurrence_time:
+          type: string
+          format: date-time
+
+    CashbackTransactionItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        payload:
+          type: object
+          properties:
+            credits_redeemed:
+              type: number
+              description: مقدار کشبک استفاده شده
+            order_id:
+              type: integer
+        uid:
+          type: integer
+        username:
+          type: string
+        event_id:
+          type: integer
+        occurrence_time:
+          type: string
+          format: date-time
+
+    EventPayload:
+      type: object
+      description: پیلود رویداد خرید
+      required:
+        - uid
+        - username
+        - order_id
+        - order_total_price
+        - order_paid_price
+        - timestamp
+      properties:
+        anonymous_id:
+          type: string
+          description: شناسه ناشناس (در صورت عدم ورود کاربر)
+          example: ""
+        uid:
+          type: string
+          description: شناسه کاربر در سیستم شما
+          example: "380"
+        username:
+          type: string
+          description: نام کاربری (شماره موبایل)
+          example: "9121234567"
+        order_id:
+          type: string
+          description: شماره سفارش
+          example: "13721"
+        device_id:
+          type: string
+          nullable: true
+        session_id:
+          type: string
+          nullable: true
+        order_total_price:
+          type: number
+          description: قیمت کل سفارش (قبل از تخفیف)
+          example: 50560000
+        order_paid_price:
+          type: number
+          description: مبلغ پرداخت شده
+          example: 50560000
+        order_with_discount_price:
+          type: number
+          description: قیمت بعد از اعمال تخفیف
+          example: 50560000
+        order_coupon_codes:
+          type: array
+          items:
+            type: string
+          description: کدهای کوپن اعمال شده ("empty" اگر کوپنی نباشد)
+          example: ["empty"]
+        discount_price_applied:
+          type: number
+          description: مقدار تخفیف اعمال شده
+          example: 0
+        cashback_price_applied:
+          type: number
+          description: مقدار کشبک اعمال شده
+          example: 0
+        cost_misc:
+          type: number
+          description: هزینه‌های جانبی
+          example: 0
+        cost_shipping:
+          type: number
+          description: هزینه ارسال
+          example: 0
+        cost_taxonomy:
+          type: number
+          description: هزینه دسته‌بندی
+          example: 0
+        currency:
+          type: string
+          description: واحد پول
+          example: "تومان"
+        products:
+          type: array
+          items:
+            type: integer
+          description: آرایه شناسه محصولات خریداری شده
+          example: [606, 553]
+        Included_categories:
+          type: array
+          items:
+            type: integer
+          description: آرایه شناسه دسته‌بندی‌های محصولات
+          example: [8]
+        affiliate_referrer_id:
+          type: string
+          description: شناسه معرف
+          example: "134"
+        timestamp:
+          type: string
+          description: تاریخ و زمان رویداد (فرمت YYYY-MM-DD HH:MM:SS)
+          example: "2025-09-22 10:01:28"
+        purchase_channel:
+          type: string
+          description: "کانال خرید: آنلاین | درب_منزل | اعتبار | پرداخت_چند_مرحله_ای"
+          example: "آنلاین"
+        branch:
+          type: string
+          description: کد شعبه (خالی بگذارید اگر ندارید)
+          example: ""
+
+    Event:
+      type: object
+      description: رویداد برای ارسال به لژیون
+      required:
+        - id
+        - event_id
+        - payload
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: شناسه یکتای رویداد (UUID v5 توصیه می‌شود)
+          example: "b07607de-73e3-50a3-82fd-8f1b48cea861"
+        event_id:
+          type: integer
+          description: نوع رویداد (2 = خرید)
+          example: 2
+        payload:
+          $ref: '#/components/schemas/EventPayload'
+        meta:
+          type: object
+          description: متادیتای اضافی
+          example: {}
+
+paths:
+  # ─────────────────────────────────────────────
+  # CONNECTION TEST
+  # ─────────────────────────────────────────────
+  /v1/api/integration/accounts/connection/:
+    get:
+      tags:
+        - 🔌 اتصال
+      summary: تست اتصال
+      description: بررسی اتصال و اعتبارسنجی توکن API
+      operationId: testConnection
+      responses:
+        "200":
+          description: اتصال موفق
+        "401":
+          description: توکن نامعتبر
+
+  # ─────────────────────────────────────────────
+  # ACCOUNTS
+  # ─────────────────────────────────────────────
+  /v1/api/integration/accounts/list/:
+    get:
+      tags:
+        - 👤 مشتریان
+      summary: لیست مشتریان
+      description: دریافت لیست مشتریان با امکان فیلتر و صفحه‌بندی
+      operationId: listAccounts
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: شماره صفحه
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+          description: تعداد در هر صفحه
+        - name: first_name
+          in: query
+          schema:
+            type: string
+          description: فیلتر بر اساس نام
+        - name: last_name
+          in: query
+          schema:
+            type: string
+          description: فیلتر بر اساس نام خانوادگی
+        - name: email
+          in: query
+          schema:
+            type: string
+          description: فیلتر بر اساس ایمیل
+        - name: mobile
+          in: query
+          schema:
+            type: string
+          description: فیلتر بر اساس موبایل
+        - name: uid
+          in: query
+          schema:
+            type: string
+          description: فیلتر بر اساس شناسه در سیستم شما
+        - name: ids
+          in: query
+          schema:
+            type: string
+          description: فیلتر بر اساس شناسه‌های داخلی لژیون (comma-separated)
+        - name: timedate
+          in: query
+          schema:
+            type: string
+          description: فیلتر بر اساس بازه زمانی
+      responses:
+        "200":
+          description: لیست مشتریان
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Account'
+                  count:
+                    type: integer
+                    description: تعداد کل
+              example:
+                items:
+                  - id: 141865
+                    username: "9121234567"
+                    uid: 219
+                    email: "user@example.com"
+                    mobile: "9121234567"
+                    first_name: "علی"
+                    last_name: "رضایی"
+                    score:
+                      - id: 9
+                        name: "سکه"
+                        number: 150
+                    tier: null
+                    user_segment: []
+                    xp: 0
+                    rfm_segment: 3
+                count: 1
+
+  /v1/api/integration/accounts/detail/:
+    get:
+      tags:
+        - 👤 مشتریان
+      summary: جزئیات مشتری
+      description: دریافت اطلاعات کامل یک مشتری بر اساس username یا uid
+      operationId: getAccount
+      parameters:
+        - name: username
+          in: query
+          schema:
+            type: string
+          description: نام کاربری مشتری
+          example: "9121234567"
+        - name: uid
+          in: query
+          schema:
+            type: string
+          description: شناسه در سیستم شما
+          example: "219"
+      responses:
+        "200":
+          description: اطلاعات مشتری
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+
+  /integration/accounts/insert/:
+    post:
+      tags:
+        - 👤 مشتریان
+      summary: ثبت مشتری (تکی یا گروهی)
+      description: |
+        ثبت یک یا چند مشتری جدید در لژیون.
+        
+        ⚠️ این عملیات ناهمزمان است و یک `process_id` برمی‌گرداند.
+      operationId: insertAccounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AccountInsert'
+            example:
+              - userId: 1500000090
+                username: "9121234567"
+                first_name: "علی"
+                last_name: "رضایی"
+                email: "user@example.com"
+                mobile: "9121234567"
+                address: "تهران، خیابان ولیعصر"
+                post_code: "1234567890"
+      responses:
+        "200":
+          description: عملیات ناهمزمان آغاز شد
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessIdResponse'
+
+  /v1/api/integration/accounts/delete/:
+    delete:
+      tags:
+        - 👤 مشتریان
+      summary: حذف مشتری
+      operationId: deleteAccount
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+          description: نام کاربری مشتری برای حذف
+      responses:
+        "204":
+          description: مشتری با موفقیت حذف شد
+
+  /v1/api/integration/accounts/import/:
+    post:
+      tags:
+        - 👤 مشتریان
+      summary: ایمپورت مشتریان از فایل CSV
+      description: |
+        آپلود فایل CSV برای ایمپورت گروهی مشتریان.
+        
+        فرمت CSV: `userId,username,first_name,last_name,email,mobile,address,post_code`
+      operationId: importAccounts
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: فایل CSV
+      responses:
+        "200":
+          description: آپلود موفق
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessIdResponse'
+
+  /v1/api/integration/accounts/bulk-update/:
+    patch:
+      tags:
+        - 👤 مشتریان
+      summary: به‌روزرسانی گروهی مشتریان
+      description: |
+        به‌روزرسانی اطلاعات چند مشتری به صورت همزمان.
+        
+        فقط فیلدهایی که ارسال شوند به‌روزرسانی می‌شوند.
+        
+        ⚠️ این عملیات ناهمزمان است.
+      operationId: bulkUpdateAccounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AccountBulkUpdate'
+            example:
+              - id: 141891
+                uid: 280
+                email: "newemail@example.com"
+                first_name: "علی"
+      responses:
+        "200":
+          description: عملیات ناهمزمان آغاز شد
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessIdResponse'
+
+  /v1/api/integration/accounts/user/notes/:
+    get:
+      tags:
+        - 👤 مشتریان
+      summary: یادداشت‌های مشتری
+      description: دریافت یادداشت‌های ثبت شده برای یک مشتری
+      operationId: getUserNotes
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "9121234567"
+      responses:
+        "200":
+          description: لیست یادداشت‌ها
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+              example:
+                - id: 1
+                  note: "مشتری VIP"
+                  created: "2025-07-09T08:53:49.966Z"
+
+  /v1/api/integration/accounts/user/customer/login-redirect/:
+    post:
+      tags:
+        - 👤 مشتریان
+      summary: لینک ورود مستقیم
+      description: |
+        ایجاد لینک ورود مستقیم برای هدایت مشتری به Club App بدون نیاز به رمز عبور.
+        
+        لینک برگشتی حاوی توکن رمزگذاری شده است و به صفحه اصلی کلاب هدایت می‌کند.
+      operationId: loginRedirect
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  type: integer
+                  description: شناسه کاربر در سیستم شما
+                  example: 280
+                mobile:
+                  type: string
+                  description: شماره موبایل
+                  example: "9121234567"
+                email:
+                  type: string
+                  format: email
+                  nullable: true
+                  example: null
+      responses:
+        "200":
+          description: لینک ورود مستقیم
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  link:
+                    type: string
+                    format: uri
+                    description: لینک رمزگذاری شده برای ورود مستقیم
+                    example: "https://club.yourshop.com/redirect?token=gAAAAA..."
+
+  # ─────────────────────────────────────────────
+  # PRODUCTS
+  # ─────────────────────────────────────────────
+  /v1/api/integration/products/list/:
+    get:
+      tags:
+        - 📦 محصولات
+      summary: لیست محصولات
+      operationId: listProducts
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: لیست محصولات
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  count:
+                    type: integer
+
+  /v1/api/integration/products/detail/:
+    get:
+      tags:
+        - 📦 محصولات
+      summary: جزئیات محصول
+      operationId: getProduct
+      parameters:
+        - name: product_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          example: 600073
+      responses:
+        "200":
+          description: اطلاعات محصول
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+  /v1/api/integration/products/insert/:
+    post:
+      tags:
+        - 📦 محصولات
+      summary: ثبت/به‌روزرسانی محصولات
+      description: |
+        ثبت محصولات جدید یا به‌روزرسانی محصولات موجود (بر اساس `pid`).
+        
+        ⚠️ این عملیات ناهمزمان است.
+      operationId: insertProducts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Product'
+            example:
+              - pid: 600073
+                title: "چای سیاه"
+                price: 50000
+                url: "https://yourshop.com/product/black-tea/"
+                image: "https://yourshop.com/images/black-tea.jpg"
+                categories: [16, 22]
+                is_active: true
+      responses:
+        "200":
+          description: عملیات ناهمزمان آغاز شد
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessIdResponse'
+
+  /v1/api/integration/products/delete/{product_id}/:
+    delete:
+      tags:
+        - 📦 محصولات
+      summary: حذف محصول
+      operationId: deleteProduct
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 600073
+      responses:
+        "204":
+          description: محصول حذف شد
+
+  /v1/api/integration/products/import/:
+    post:
+      tags:
+        - 📦 محصولات
+      summary: ایمپورت محصولات از CSV
+      operationId: importProducts
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: آپلود موفق
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessIdResponse'
+
+  # ─────────────────────────────────────────────
+  # CATEGORIES
+  # ─────────────────────────────────────────────
+  /v1/api/integration/categories/list/:
+    get:
+      tags:
+        - 🗂️ دسته‌بندی‌ها
+      summary: لیست دسته‌بندی‌ها
+      operationId: listCategories
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: جستجو بر اساس نام
+      responses:
+        "200":
+          description: لیست دسته‌بندی‌ها
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+                  count:
+                    type: integer
+
+  /v1/api/integration/categories/detail/{category_id}/:
+    get:
+      tags:
+        - 🗂️ دسته‌بندی‌ها
+      summary: جزئیات دسته‌بندی
+      operationId: getCategory
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 15
+      responses:
+        "200":
+          description: اطلاعات دسته‌بندی
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+
+  /v1/api/integration/categories/insert/:
+    post:
+      tags:
+        - 🗂️ دسته‌بندی‌ها
+      summary: ثبت دسته‌بندی‌ها
+      description: ⚠️ این عملیات ناهمزمان است.
+      operationId: insertCategories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Category'
+            example:
+              - cid: 116
+                name: "محصولات جدید"
+                parent: 0
+      responses:
+        "200":
+          description: عملیات ناهمزمان آغاز شد
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessIdResponse'
+
+  /v1/api/integration/categories/delete/{category_id}/:
+    delete:
+      tags:
+        - 🗂️ دسته‌بندی‌ها
+      summary: حذف دسته‌بندی
+      operationId: deleteCategory
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: دسته‌بندی حذف شد
+
+  /v1/api/integration/categories/import/:
+    post:
+      tags:
+        - 🗂️ دسته‌بندی‌ها
+      summary: ایمپورت دسته‌بندی‌ها از CSV
+      operationId: importCategories
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: آپلود موفق
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessIdResponse'
+
+  # ─────────────────────────────────────────────
+  # REWARDS
+  # ─────────────────────────────────────────────
+  /integration/rewards/list/{username}/:
+    get:
+      tags:
+        - 🎁 پاداش‌ها
+      summary: پاداش‌های قابل دریافت کاربر
+      description: لیست پاداش‌هایی که کاربر می‌تواند دریافت کند
+      operationId: getUserRewards
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "9121234567"
+      responses:
+        "200":
+          description: لیست پاداش‌ها
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+
+  /integration/rewards/list/claimed/:
+    get:
+      tags:
+        - 🎁 پاداش‌ها
+      summary: لیست پاداش‌های دریافت شده (همه)
+      description: لیست تمام پاداش‌های دریافت شده در سیستم
+      operationId: listAllClaimedRewards
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: لیست پاداش‌های دریافت شده
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ClaimedReward'
+                  count:
+                    type: integer
+
+  /v1/api/integration/rewards/list/claimed/{username}/:
+    get:
+      tags:
+        - 🎁 پاداش‌ها
+      summary: پاداش‌های دریافت شده یک کاربر
+      operationId: getUserClaimedRewards
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "9121234567"
+      responses:
+        "200":
+          description: لیست پاداش‌های دریافت شده کاربر
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ClaimedReward'
+                  count:
+                    type: integer
+
+  /v1/api/integration/rewards/detail/{reward_id}/:
+    get:
+      tags:
+        - 🎁 پاداش‌ها
+      summary: جزئیات پاداش
+      operationId: getReward
+      parameters:
+        - name: reward_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 59
+      responses:
+        "200":
+          description: اطلاعات پاداش
+
+  /integration/rewards/claim/:
+    post:
+      tags:
+        - 🎁 پاداش‌ها
+      summary: دریافت پاداش
+      description: |
+        دریافت (Claim) یک پاداش برای کاربر و صدور کد تخفیف.
+        
+        پس از دریافت، یک `code` برای استفاده در سبد خرید صادر می‌شود.
+      operationId: claimReward
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - reward_id
+              properties:
+                username:
+                  type: string
+                  example: "9121234567"
+                reward_id:
+                  type: integer
+                  example: 59
+      responses:
+        "200":
+          description: پاداش با موفقیت دریافت شد
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimedReward'
+
+  /integration/rewards/burn/code/:
+    post:
+      tags:
+        - 🎁 پاداش‌ها
+      summary: استفاده از کد تخفیف (Burn)
+      description: |
+        پس از استفاده کاربر از کد تخفیف، این endpoint را فراخوانی کنید تا کد به‌عنوان "استفاده شده" علامت‌گذاری شود.
+      operationId: burnRewardCode
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "9121234567"
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "cartBBJM"
+      responses:
+        "200":
+          description: کد با موفقیت استفاده شد
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  burn:
+                    type: boolean
+                    example: true
+
+  /v1/api/integration/rewards/list/products:
+    post:
+      tags:
+        - 🎁 پاداش‌ها
+      summary: پاداش‌های مشمول محصولات
+      description: دریافت پاداش‌هایی که برای محصولات مشخص قابل استفاده هستند
+      operationId: getProductRewards
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_ids:
+                  type: array
+                  items:
+                    type: integer
+                  example: [600073, 600074]
+                username:
+                  oneOf:
+                    - type: string
+                    - type: integer
+                  description: نام کاربری یا شناسه کاربر
+                discount_on_type:
+                  type: integer
+                  description: نوع تخفیف
+      responses:
+        "200":
+          description: لیست پاداش‌ها
+
+  # ─────────────────────────────────────────────
+  # SOCIAL MEDIA
+  # ─────────────────────────────────────────────
+  /v1/api/integration/social-media/create/:
+    post:
+      tags:
+        - 📱 شبکه‌های اجتماعی
+      summary: ذخیره پروفایل شبکه اجتماعی
+      description: ذخیره یا به‌روزرسانی اطلاعات شبکه‌های اجتماعی یک کاربر
+      operationId: createSocialMedia
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "9121234567"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialMedia'
+      responses:
+        "200":
+          description: پروفایل ذخیره شد
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialMedia'
+
+  /v1/api/integration/social-media/detail/:
+    get:
+      tags:
+        - 📱 شبکه‌های اجتماعی
+      summary: پروفایل شبکه اجتماعی
+      operationId: getSocialMedia
+      parameters:
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "9121234567"
+      responses:
+        "200":
+          description: اطلاعات شبکه‌های اجتماعی
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialMedia'
+
+  # ─────────────────────────────────────────────
+  # CASHBACK
+  # ─────────────────────────────────────────────
+  /cashback/integration/credits/:
+    get:
+      tags:
+        - 💰 کشبک
+      summary: گزارش کشبک‌های کسب شده
+      description: تاریخچه کشبک‌هایی که کاربر کسب کرده است
+      operationId: getCashbackCredits
+      parameters:
+        - name: username
+          in: query
+          schema:
+            type: string
+          example: "9121234567"
+        - name: uid
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: order_id_gt
+          in: query
+          schema:
+            type: integer
+          description: فقط سفارش‌هایی با شناسه بزرگتر از این مقدار
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: start_at
+          in: query
+          schema:
+            type: string
+            format: date
+          example: "2025-01-01"
+        - name: end_at
+          in: query
+          schema:
+            type: string
+            format: date
+          example: "2025-12-31"
+      responses:
+        "200":
+          description: لیست کشبک‌ها
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      per_page:
+                        type: integer
+                      current_page:
+                        type: integer
+                      total_page:
+                        type: integer
+                      total_item:
+                        type: integer
+                      list:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CashbackCreditItem'
+
+  /cashback/integration/general-report/:
+    get:
+      tags:
+        - 💰 کشبک
+      summary: گزارش کلی کشبک کاربر
+      description: خلاصه اطلاعات کشبک یک کاربر
+      operationId: getCashbackGeneralReport
+      parameters:
+        - name: username
+          in: query
+          schema:
+            type: string
+        - name: uid
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: گزارش کلی
+        "400":
+          description: خطای اعتبارسنجی
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+              example:
+                detail: "username or uid must be provided"
+
+  /integration/cashback/integration/transactions/:
+    get:
+      tags:
+        - 💰 کشبک
+      summary: تراکنش‌های کشبک
+      description: لیست تراکنش‌های استفاده از کشبک
+      operationId: getCashbackTransactions
+      parameters:
+        - name: uid
+          in: query
+          schema:
+            type: integer
+        - name: order_id_gt
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+        - name: start_at
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_at
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: لیست تراکنش‌ها
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      per_page:
+                        type: integer
+                      current_page:
+                        type: integer
+                      total_page:
+                        type: integer
+                      total_item:
+                        type: integer
+                      list:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CashbackTransactionItem'
+
+  # ─────────────────────────────────────────────
+  # SYNC
+  # ─────────────────────────────────────────────
+  /v1/api/integration/sync/inquiry/:
+    get:
+      tags:
+        - 🔄 همگام‌سازی
+      summary: بررسی وضعیت عملیات ناهمزمان
+      description: |
+        بررسی نتیجه عملیات‌هایی که `process_id` برمی‌گردانند.
+        
+        **وضعیت‌های ممکن:**
+        - `success`: عملیات با موفقیت انجام شد
+        - `pending`: در حال پردازش
+        - `failed`: خطا در پردازش
+      operationId: syncInquiry
+      parameters:
+        - name: process_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "7959a389-216b-4136-8f5e-9cadcfcdab73"
+      responses:
+        "200":
+          description: وضعیت عملیات
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncInquiryResponse'
+              example:
+                data:
+                  updated_ids: []
+                  created_ids: [116, 117]
+                status: "success"
+
+  /v1/api/integration/notice/send/:
+    get:
+      tags:
+        - 🔄 همگام‌سازی
+      summary: ارسال اعلان همگام‌سازی
+      description: اعلام آغاز فرآیند همگام‌سازی به لژیون
+      operationId: noticeSend
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: "sync started"
+                kind:
+                  type: integer
+                  example: 4
+      responses:
+        "200":
+          description: اعلان ارسال شد
+
+  # ─────────────────────────────────────────────
+  # EVENTS
+  # ─────────────────────────────────────────────
+  /integration/flow-state/event/add/:
+    post:
+      tags:
+        - ⚡ رویدادها
+      summary: ارسال رویداد خرید
+      description: |
+        ارسال رویداد خرید به موتور وفاداری لژیون برای پردازش امتیازات، مأموریت‌ها، و کشبک.
+
+        ### نکات مهم:
+        - این endpoint آرایه‌ای از رویدادها می‌پذیرد (batch processing)
+        - `id` باید UUID یکتا باشد - از UUID v5 توصیه می‌شود
+        - `event_id = 2` برای رویداد خرید استفاده می‌شود
+        - `timestamp` باید فرمت `YYYY-MM-DD HH:MM:SS` داشته باشد
+        - `purchase_channel` می‌تواند: `آنلاین`، `درب_منزل`، `اعتبار`، `پرداخت_چند_مرحله_ای` باشد
+        - برای سفارش بدون کوپن، `order_coupon_codes` را با `["empty"]` پر کنید
+
+        ### جریان کاری:
+        1. کاربر خرید می‌کند
+        2. سیستم شما این endpoint را فراخوانی می‌کند
+        3. لژیون امتیازات، مأموریت‌ها، و کشبک را محاسبه می‌کند
+        4. مشتری در Club App امتیازات خود را مشاهده می‌کند
+      operationId: sendEvents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Event'
+            example:
+              - id: "b07607de-73e3-50a3-82fd-8f1b48cea861"
+                event_id: 2
+                payload:
+                  anonymous_id: ""
+                  uid: "380"
+                  username: "9121234567"
+                  order_id: "13721"
+                  device_id: null
+                  session_id: null
+                  order_total_price: 50560000
+                  order_paid_price: 50560000
+                  order_with_discount_price: 50560000
+                  order_coupon_codes: ["empty"]
+                  discount_price_applied: 0
+                  cashback_price_applied: 0
+                  cost_misc: 0
+                  cost_shipping: 0
+                  cost_taxonomy: 0
+                  currency: "تومان"
+                  products: [606, 553]
+                  Included_categories: [8]
+                  affiliate_referrer_id: "134"
+                  timestamp: "2025-09-22 10:01:28"
+                  purchase_channel: "آنلاین"
+                  branch: ""
+                meta: {}
+      responses:
+        "200":
+          description: رویدادها با موفقیت دریافت شدند
+        "400":
+          description: خطای اعتبارسنجی
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+tags:
+  - name: 🔌 اتصال
+    description: تست اتصال و احراز هویت
+  - name: 👤 مشتریان
+    description: مدیریت مشتریان و پروفایل‌ها
+  - name: 📦 محصولات
+    description: مدیریت محصولات
+  - name: 🗂️ دسته‌بندی‌ها
+    description: مدیریت دسته‌بندی‌های محصولات
+  - name: 🎁 پاداش‌ها
+    description: مدیریت پاداش‌ها و کدهای تخفیف
+  - name: 📱 شبکه‌های اجتماعی
+    description: مدیریت پروفایل شبکه‌های اجتماعی کاربران
+  - name: 💰 کشبک
+    description: گزارش‌ها و تراکنش‌های کشبک
+  - name: 🔄 همگام‌سازی
+    description: مدیریت فرآیندهای ناهمزمان
+  - name: ⚡ رویدادها
+    description: ارسال رویداد خرید به موتور وفاداری
