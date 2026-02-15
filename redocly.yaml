@@ -3,9 +3,9 @@ apis:
     root: openapi.yaml
     title: Legion Integration API
 
-sidebar:
-  - page: index.md
-    label: شروع سریع
+nav:
+  - label: شروع سریع
+    page: index.md
   - label: API Reference
     page: openapi.yaml
 
