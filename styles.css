@@ -1,0 +1,52 @@
+/* RTL Support for Persian/Arabic content */
+html,
+body {
+  direction: rtl !important;
+  text-align: right !important;
+  font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif !important;
+}
+
+/* Navigation and sidebar */
+.sidebar,
+.navbar,
+nav,
+[class*="sidebar"],
+[class*="nav"] {
+  direction: rtl;
+}
+
+/* Keep code blocks LTR */
+pre,
+code,
+kbd,
+samp,
+.code-sample,
+[class*="code"],
+[class*="Code"] {
+  direction: ltr !important;
+  text-align: left !important;
+  font-family: 'Fira Code', 'Courier New', monospace !important;
+}
+
+/* Tables */
+table {
+  direction: rtl;
+}
+
+table th,
+table td {
+  text-align: right;
+}
+
+/* API method badges and technical labels stay LTR */
+[class*="http-verb"],
+[class*="httpVerb"],
+[class*="operation"],
+.label,
+[class*="badge"] {
+  direction: ltr;
+}
+
+/* Fix margins/padding for RTL */
+[dir="rtl"] .ml-auto { margin-left: 0 !important; margin-right: auto !important; }
+[dir="rtl"] .mr-auto { margin-right: 0 !important; margin-left: auto !important; }
