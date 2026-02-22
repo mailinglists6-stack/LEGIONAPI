@@ -2,9 +2,12 @@
    Root variables (default/fallback)
    ========================================== */
 :root {
+  --font-family-base: 'Vazirmatn', sans-serif;
+  --h1-font-family: 'Vazirmatn', sans-serif;
   --background-main: #fff;
   --background: #f1f2f3;
   --primary: #6b47e1;
+  --primary2: #8a6dff;
   --title: #15181e;
   --body: #45464f;
   --btn-text-primary: #fff;
@@ -88,6 +91,34 @@ button {
 }
 
 /* Button groups (RTL fix) */
-.ButtonGroup__ButtonGroupWrapper-sc-wc419o-0.jIKzSj.button-group-outlined.button-group-size-medium {
-  flex-direction: row-reverse;
+.ButtonGroup__ButtonGroupWrapper-sc-wc419o-0.ecApoX.button-group-outlined.button-group-size-medium {
+  flex-direction: row-reverse !important;
 }
+
+/* Custom Docly Button Colors */
+:root .button-variant-primary {
+    --button-color: var(--btn-text-primary);
+    --button-color-hover: var(--btn-text-primary);
+    --button-color-active: var(--btn-text-primary);
+
+    --button-bg-color: var(--primary);
+    --button-bg-color-hover: var(--primary2);
+    --button-bg-color-active: var(--icon-brand);
+
+    --button-border-color: transparent;
+
+    --button-bg-color-danger: var(--text-attentive);
+    --button-bg-color-danger-hover: var(--icon-attentive);
+    --button-bg-color-danger-pressed: #e6a233;
+
+    --button-border-color-danger: transparent;
+    --button-border-color-danger-hover: transparent;
+    --button-border-color-danger-pressed: transparent;
+
+    --button-content-color-danger: var(--btn-text-primary);
+    --button-content-color-danger-hover: var(--btn-text-primary);
+    --button-content-color-danger-pressed: var(--btn-text-primary);
+
+    --button-border-width-disabled: 0px;
+}
+
