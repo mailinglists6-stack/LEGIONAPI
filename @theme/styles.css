@@ -1,16 +1,4 @@
 /* RTL Support for Persian/Arabic content */
-html,
-body {
-  direction: rtl !important;
-  text-align: right !important;
-  font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif !important;
-}
-
-.ButtonGroup__ButtonGroupWrapper-sc-wc419o-0.jIKzSj.button-group-outlined.button-group-size-medium {
-    flex-direction: row-reverse;
-}
-
-/* @theme/styles.css */
 :root {
     --background-main: #fff;
     --primary: #6b47e1;
@@ -18,13 +6,19 @@ body {
     --body: #45464f;
     /* بقیه متغیرها که فرستادی */
 }
-
-/* استفاده از متغیرها */
+html,
 body {
+    direction: rtl !important;
+    text-align: right !important;
+    font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif !important;
     background-color: var(--background-main);
     color: var(--body);
-    font-family: 'Inter', sans-serif;
 }
+
+.ButtonGroup__ButtonGroupWrapper-sc-wc419o-0.jIKzSj.button-group-outlined.button-group-size-medium {
+    flex-direction: row-reverse;
+}
+
 
 h1, h2, h3, h4 {
     color: var(--title);
