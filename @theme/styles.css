@@ -2,6 +2,7 @@
    Root variables (default/fallback)
    ========================================== */
 :root {
+    direction: rtl;
   --font-family-base: 'Vazirmatn', sans-serif;
   --h1-font-family: 'Vazirmatn', sans-serif;
   --background-main: #fff;
@@ -59,8 +60,6 @@
    Base RTL + Typography
    ========================================== */
 html, body {
-  direction: rtl !important;
-  text-align: right !important;
   font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif !important;
   background-color: var(--background-main);
   color: var(--body);
