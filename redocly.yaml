@@ -2,6 +2,6 @@ apis:
   legion-integration@v1:
     root: openapi.yaml
     title: Legion Integration API
-
-theme:
-  customStyles: src/theme/styles.css
+links:
+  - rel: stylesheet
+    href: './@theme/styles.css'
