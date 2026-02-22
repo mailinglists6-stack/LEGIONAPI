@@ -1,7 +1,6 @@
 /* RTL Support for Persian/Arabic content */
 html,
 body {
-  background-color: rgb(36 175 32);
   direction: rtl !important;
   text-align: right !important;
   font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif !important;
