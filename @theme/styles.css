@@ -6,47 +6,35 @@ body {
   font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif !important;
 }
 
-/* Navigation and sidebar */
-.sidebar,
-.navbar,
-nav,
-[class*="sidebar"],
-[class*="nav"] {
-  direction: rtl;
+.ButtonGroup__ButtonGroupWrapper-sc-wc419o-0.jIKzSj.button-group-outlined.button-group-size-medium {
+    flex-direction: row-reverse;
 }
 
-/* Keep code blocks LTR */
-pre,
-code,
-kbd,
-samp,
-.code-sample,
-[class*="code"],
-[class*="Code"] {
-  direction: ltr !important;
-  text-align: left !important;
-  font-family: 'Fira Code', 'Courier New', monospace !important;
+/* @theme/styles.css */
+:root {
+    --background-main: #fff;
+    --primary: #6b47e1;
+    --title: #15181e;
+    --body: #45464f;
+    /* بقیه متغیرها که فرستادی */
 }
 
-/* Tables */
-table {
-  direction: rtl;
+/* استفاده از متغیرها */
+body {
+    background-color: var(--background-main);
+    color: var(--body);
+    font-family: 'Inter', sans-serif;
 }
 
-table th,
-table td {
-  text-align: right;
+h1, h2, h3, h4 {
+    color: var(--title);
 }
 
-/* API method badges and technical labels stay LTR */
-[class*="http-verb"],
-[class*="httpVerb"],
-[class*="operation"],
-.label,
-[class*="badge"] {
-  direction: ltr;
+a {
+    color: var(--primary);
 }
 
-/* Fix margins/padding for RTL */
-[dir="rtl"] .ml-auto { margin-left: 0 !important; margin-right: auto !important; }
-[dir="rtl"] .mr-auto { margin-right: 0 !important; margin-left: auto !important; }
+button {
+    background-color: var(--primary);
+    color: var(--btn-text-primary);
+}
