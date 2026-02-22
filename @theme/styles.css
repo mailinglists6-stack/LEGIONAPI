@@ -1,73 +1,60 @@
+/* ==========================================
+   Root variables (default/fallback)
+   ========================================== */
 :root {
-  /* Default Colors / Fallbacks */
   --background-main: #fff;
   --background: #f1f2f3;
   --primary: #6b47e1;
   --title: #15181e;
-  --title-dark: #fff;
   --body: #45464f;
-  --body-dark: #e6e7ea;
-  --violet: #f6f7f9;
-  --violet2: #f1f0f4;
-  --mute: #818692;
+  --btn-text-primary: #fff;
+  --surface: #fff;
   --text-secondary: #45464f;
   --text-attentive: #a56a12;
-  --text-invert-title: #fff;
-  --text-violet-300: #ccbfff;
-  --text-violet-400: #b3a0ff;
-  --surface: #fff;
-  --btn-text-primary: #fff;
-  --background-beige: #f2f0ed;
-  --background-beige-2: #f7f5f3;
-  --background-beige-3: #fbfaf9;
-  --background-brand: #f7f5ff;
-  --background-header: #fffffff5;
-  --background-navbar: #ffffffe0;
-  --background-navbar-image: #edeff3;
-  --border-06: #0000000f;
-  --border-10: #0000001a;
-  --icon-active: #5f646d;
-  --icon-inactive: #acb0b9;
-  --icon-brand: #6b47e1;
-  --icon-attentive: #ffba33;
-  --border-active: #d3d5d9;
-  --background-secondary-active: #fff;
-  --stroke-brand: #8a6dff;
-  --stroke-inactive: #e6e7ea;
-  --gray-800: #2f3037;
-  --green-500: #1caf61;
-
-  /* Doci / Realm Defaults */
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --link-text-color: #1668dc;
-  --sidebar-background-color: #f8fafc;
-  --sidebar-active-background-color: #e2e8f0;
-  --text-color: #1f2937;
   --bg-overlay: #f2f2f2;
 }
 
-/* Light mode overrides */
+/* ==========================================
+   Light Mode
+   ========================================== */
 :root.light {
-  --sidebar-background-color: #ffffff;
-  --sidebar-active-background-color: var(--primary);
-  --text-color: var(--body);
+  --background-main: #fff;
+  --background: #f1f2f3;
+  --primary: #6b47e1;
+  --title: #15181e;
+  --body: #45464f;
+  --btn-text-primary: #fff;
+  --surface: #fff;
+  --text-secondary: #45464f;
+  --text-attentive: #a56a12;
+  --bg-overlay: #f2f2f2;
   --navbar-background-color: #ffffff;
+  --sidebar-background-color: #f8fafc;
+  --sidebar-active-background-color: #e2e8f0;
 }
 
-/* Dark mode overrides */
+/* ==========================================
+   Dark Mode
+   ========================================== */
 :root.dark {
-  --color-primary: #60a5fa;
-  --color-primary-hover: #3b82f6;
-  --link-text-color: #60a5fa;
+  --background-main: #1f2024;
+  --background: #2a2b30;
+  --primary: #8a6dff;
+  --title: #ffffff;
+  --body: #d1d2d6;
+  --btn-text-primary: #ffffff;
+  --surface: #2a2b30;
+  --text-secondary: #b0b0b8;
+  --text-attentive: #ffba33;
+  --bg-overlay: #2a2b30;
+  --navbar-background-color: #1c1d22;
   --sidebar-background-color: #1e293b;
   --sidebar-active-background-color: #334155;
-  --text-color: var(--body-dark);
-  --bg-overlay: #374151;
-  --navbar-background-color: #0f172a;
 }
 
-/* Global body styling with RTL support */
+/* ==========================================
+   Base RTL + Typography
+   ========================================== */
 html, body {
   direction: rtl !important;
   text-align: right !important;
@@ -76,23 +63,31 @@ html, body {
   color: var(--body);
 }
 
-/* Headings */
 h1, h2, h3, h4 {
   color: var(--title);
 }
 
-/* Links */
 a {
   color: var(--primary);
 }
 
-/* Buttons */
 button {
   background-color: var(--primary);
   color: var(--btn-text-primary);
 }
 
-/* Specific component tweaks */
+/* Navbar & sidebar */
+.navbar, header, .sidebar {
+  background-color: var(--navbar-background-color);
+  color: var(--body);
+}
+
+/* Overlay elements */
+.overlay {
+  background-color: var(--bg-overlay);
+}
+
+/* Button groups (RTL fix) */
 .ButtonGroup__ButtonGroupWrapper-sc-wc419o-0.jIKzSj.button-group-outlined.button-group-size-medium {
   flex-direction: row-reverse;
 }
